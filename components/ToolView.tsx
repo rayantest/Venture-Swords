@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ToolDefinition, AnalysisResult } from '../types';
-import { Logo } from './Logo';
 import { 
   Play, RotateCcw, AlertTriangle, ArrowLeft, Loader2, 
   Terminal, FileText, CheckSquare, Target 
@@ -161,7 +160,6 @@ const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
             </button>
             <div className="h-6 w-px bg-[#094E2E]"></div>
             <div className="flex items-center gap-3">
-               <Logo className="h-8 w-8 text-[#EFBF04]" />
                <span className="font-black text-white text-sm uppercase hidden md:block tracking-tight">VentureSwords</span>
             </div>
           </div>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { TOOLS } from '../constants';
 import { ToolDefinition } from '../types';
-import { Logo } from './Logo';
 import { 
   Trophy, BarChart2, Briefcase, ClipboardCheck, AlertTriangle, Scale, TrendingDown, Hammer, Rocket, BookOpen, 
   Terminal, ChevronRight, User, Shield
@@ -39,14 +38,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectTool }) => {
           <div className="max-w-7xl mx-auto">
             
             <div className="flex flex-col lg:flex-row gap-12 justify-between items-start">
-              
+            <img src="Venture-Swords/components/l.svg" alt="logo" width={64} height={64} className="rounded-lg shadow-lg" /> 
               {/* Identity Block */}
               <div className="relative pl-6 md:pl-8 border-l-4 border-[#EFBF04]">
                 <div className="absolute -left-[11px] top-0 w-4 h-1 bg-[#EFBF04]"></div>
                 <div className="absolute -left-[11px] bottom-0 w-4 h-1 bg-[#EFBF04]"></div>
                 
-                <Logo className="h-20 w-20 mb-6 text-[#EFBF04]" />
-
                 <h1 className="text-4xl md:text-6xl font-black text-white leading-[0.85] tracking-tighter uppercase mb-5">
                   VentureSwords
                 </h1>
