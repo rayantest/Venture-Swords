@@ -1,6 +1,7 @@
 import React from 'react';
 import { TOOLS } from '../constants';
 import { ToolDefinition } from '../types';
+import { Logo } from './Logo';
 import { 
   Trophy, BarChart2, Briefcase, ClipboardCheck, AlertTriangle, Scale, TrendingDown, Hammer, Rocket, BookOpen, 
   Terminal, ChevronRight, User, Shield
@@ -44,7 +45,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectTool }) => {
                 <div className="absolute -left-[11px] top-0 w-4 h-1 bg-[#EFBF04]"></div>
                 <div className="absolute -left-[11px] bottom-0 w-4 h-1 bg-[#EFBF04]"></div>
                 
-                <h1 className="text-4xl md:text-6xl font-black text-white leading-[0.85] tracking-tighter uppercase mb-5 mt-2">
+                <Logo className="h-20 w-20 mb-6 text-[#EFBF04]" />
+
+                <h1 className="text-4xl md:text-6xl font-black text-white leading-[0.85] tracking-tighter uppercase mb-5">
                   VentureSwords
                 </h1>
                 
