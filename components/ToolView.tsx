@@ -1,10 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
-import { ToolDefinition, AnalysisResult } from '../types';
+import { ToolDefinition, AnalysisResult, SavedReport } from '../types';
 import { 
   Play, RotateCcw, AlertTriangle, ArrowLeft, Loader2, 
-  Terminal, FileText, CheckSquare, Target 
+  Terminal, FileText, CheckSquare, Target, Save, CheckCircle
 } from 'lucide-react';
 import { analyzeStartup } from '../services/gemini';
+import { db } from '../services/db';
+import { Logo } from './Logo';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -13,6 +16,7 @@ import {
 
 interface ToolViewProps {
   tool: ToolDefinition;
+  initialData?: SavedReport | null;
   onBack: () => void;
 }
 
@@ -23,25 +27,35 @@ const COLOR_ACCENT = '#EFBF04';
 const COLOR_WHITE = '#FFFFFF';
 const COLOR_GRID = '#1f2937';
 
-const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
+const ToolView: React.FC<ToolViewProps> = ({ tool, initialData, onBack }) => {
   const [inputs, setInputs] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setInputs({});
-    setResult(null);
-    setError(null);
-  }, [tool.id]);
+    if (initialData) {
+      setInputs(initialData.inputs);
+      setResult(initialData.result);
+      setSaved(true); // Assuming opened from history means it's saved
+    } else {
+      setInputs({});
+      setResult(null);
+      setError(null);
+      setSaved(false);
+    }
+  }, [tool.id, initialData]);
 
   const handleInputChange = (id: string, value: any) => {
     setInputs(prev => ({ ...prev, [id]: value }));
+    setSaved(false);
   };
 
   const handleRunAnalysis = async () => {
     setLoading(true);
     setError(null);
+    setSaved(false);
     try {
       const data = await analyzeStartup(tool, inputs);
       setResult(data);
@@ -50,6 +64,17 @@ const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveToDb = () => {
+    if (!result) return;
+    db.save({
+      toolId: tool.id,
+      toolName: tool.name,
+      inputs: inputs,
+      result: result
+    });
+    setSaved(true);
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -160,6 +185,7 @@ const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
             </button>
             <div className="h-6 w-px bg-[#094E2E]"></div>
             <div className="flex items-center gap-3">
+               <Logo className="w-8 h-8" />
                <span className="font-black text-white text-sm uppercase hidden md:block tracking-tight">VentureSwords</span>
             </div>
           </div>
@@ -252,7 +278,7 @@ const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
                   {loading ? 'CALCULATING...' : 'INITIATE'}
                 </button>
                 <button 
-                  onClick={() => { setInputs({}); setResult(null); }}
+                  onClick={() => { setInputs({}); setResult(null); setSaved(false); }}
                   className="px-4 border border-zinc-700 hover:border-white text-zinc-500 hover:text-white transition-colors"
                 >
                   <RotateCcw size={18} />
@@ -292,6 +318,19 @@ const ToolView: React.FC<ToolViewProps> = ({ tool, onBack }) => {
             {result && (
               <div className="animate-in fade-in duration-500 space-y-6">
                 
+                {/* ACTIONS BAR */}
+                <div className="flex justify-between items-center bg-black/50 p-2 border border-zinc-800">
+                  <div className="text-[10px] font-mono text-zinc-500 px-2 uppercase">Analysis generated via Gemini 2.5</div>
+                  <button 
+                    onClick={handleSaveToDb}
+                    disabled={saved}
+                    className={`flex items-center gap-2 px-4 py-2 font-mono text-xs font-bold uppercase transition-all ${saved ? 'text-[#006C35] bg-[#006C35]/10 cursor-default' : 'text-[#EFBF04] bg-[#EFBF04]/10 hover:bg-[#EFBF04] hover:text-black'}`}
+                  >
+                    {saved ? <CheckCircle size={14} /> : <Save size={14} />}
+                    {saved ? 'Archived to Database' : 'Archive Report'}
+                  </button>
+                </div>
+
                 {/* KPI STRIP */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {result.keyMetrics.map((metric, idx) => (

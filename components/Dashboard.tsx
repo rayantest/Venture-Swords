@@ -1,17 +1,35 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { TOOLS } from '../constants';
-import { ToolDefinition } from '../types';
+import { ToolDefinition, SavedReport } from '../types';
+import { db } from '../services/db';
+import { Logo } from './Logo';
 import { 
   Trophy, BarChart2, Briefcase, ClipboardCheck, AlertTriangle, Scale, TrendingDown, Hammer, Rocket, BookOpen, 
-  Terminal, ChevronRight, User, Shield
+  Terminal, ChevronRight, User, Shield, Database, Trash2, ExternalLink
 } from 'lucide-react';
 
 interface DashboardProps {
   onSelectTool: (tool: ToolDefinition) => void;
+  onLoadReport: (report: SavedReport) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onSelectTool }) => {
-   const getIcon = (iconName: string) => {
+const Dashboard: React.FC<DashboardProps> = ({ onSelectTool, onLoadReport }) => {
+  const [logs, setLogs] = useState<SavedReport[]>([]);
+
+  useEffect(() => {
+    setLogs(db.getAll());
+  }, []);
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if(confirm('CONFIRM DELETION: This record will be permanently purged from the database.')) {
+      db.delete(id);
+      setLogs(db.getAll());
+    }
+  }
+
+  const getIcon = (iconName: string) => {
     // Icons are now strictly white or gold for high contrast
     const iconClass = "text-[#EFBF04]"; 
     switch (iconName) {
@@ -34,27 +52,32 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectTool }) => {
       
       <div>
         {/* COMMAND HEADER - SYSTEM INTRO */}
-        <div className="border-b-2 border-[#094E2E] bg-black/40 backdrop-blur-md pt-16 pb-12 px-4 md:px-8 lg:px-12">
+        <div className="border-b-2 border-[#094E2E] bg-black/40 backdrop-blur-md pt-12 pb-12 px-4 md:px-8 lg:px-12">
           <div className="max-w-7xl mx-auto">
             
-            <div className="flex flex-col lg:flex-row gap-12 justify-between items-start">
-            <img src="Venture-Swords/components/l.svg" alt="logo" width={64} height={64} className="rounded-lg shadow-lg" /> 
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 justify-between items-start">
+              
+              {/* Logo / Identity */}
+              <div className="shrink-0 self-center lg:self-start w-full lg:w-auto flex justify-center lg:block">
+                <Logo className="w-32 h-32" />
+              </div>
+              
               {/* Identity Block */}
-              <div className="relative pl-6 md:pl-8 border-l-4 border-[#EFBF04]">
-                <div className="absolute -left-[11px] top-0 w-4 h-1 bg-[#EFBF04]"></div>
-                <div className="absolute -left-[11px] bottom-0 w-4 h-1 bg-[#EFBF04]"></div>
+              <div className="relative pl-0 md:pl-8 border-l-0 md:border-l-4 border-[#EFBF04] flex-1 text-center md:text-left">
+                <div className="hidden md:block absolute -left-[11px] top-0 w-4 h-1 bg-[#EFBF04]"></div>
+                <div className="hidden md:block absolute -left-[11px] bottom-0 w-4 h-1 bg-[#EFBF04]"></div>
                 
                 <h1 className="text-4xl md:text-6xl font-black text-white leading-[0.85] tracking-tighter uppercase mb-5">
                   VentureSwords
                 </h1>
                 
-                <p className="max-w-2xl text-zinc-400 font-medium text-sm md:text-lg leading-relaxed uppercase">
+                <p className="max-w-2xl text-zinc-400 font-medium text-sm md:text-lg leading-relaxed uppercase mx-auto md:mx-0">
                   Tactical Valuation Engine. <span className="text-[#EFBF04]">Engineered</span> for the precise evaluation of deep-tech and dual-use assets within the Saudi ecosystem. Bridging the valley of death from <span className="text-white font-bold">TRL 1 to 7</span> with sovereign capital intelligence.
                 </p>
               </div>
 
               {/* Status Block */}
-              <div className="hidden lg:block">
+              <div className="hidden lg:block shrink-0">
                 <div className="flex items-center gap-4 text-right">
                   <div>
                     <div className="text-[#006C35] font-mono text-xs font-bold uppercase tracking-widest">System Status</div>
@@ -121,6 +144,68 @@ const Dashboard: React.FC<DashboardProps> = ({ onSelectTool }) => {
             
           </div>
         </div>
+
+        {/* MISSION LOGS (DATABASE) */}
+        {logs.length > 0 && (
+          <div className="px-4 md:px-8 lg:px-12 pb-12">
+            <div className="max-w-7xl mx-auto">
+               <div className="flex items-end justify-between mb-8 border-b border-[#094E2E] pb-2">
+                <div className="flex items-center gap-3">
+                  <Database className="text-[#EFBF04]" size={24} />
+                  <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">
+                    Mission Logs
+                  </h3>
+                </div>
+                <span className="font-mono text-[#006C35] text-xs">DATA_RETRIEVAL</span>
+              </div>
+
+              <div className="bg-black/60 border border-[#094E2E] overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#094E2E] bg-[#094E2E]/20">
+                      <th className="p-4 font-mono text-xs text-[#EFBF04] uppercase">Timestamp</th>
+                      <th className="p-4 font-mono text-xs text-[#EFBF04] uppercase">Protocol</th>
+                      <th className="p-4 font-mono text-xs text-[#EFBF04] uppercase">Primary Metric</th>
+                      <th className="p-4 font-mono text-xs text-[#EFBF04] uppercase">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {logs.map(log => (
+                      <tr 
+                        key={log.id} 
+                        onClick={() => onLoadReport(log)}
+                        className="border-b border-[#094E2E]/30 hover:bg-[#006C35]/10 cursor-pointer group transition-colors"
+                      >
+                        <td className="p-4 font-mono text-xs text-zinc-400 group-hover:text-white">
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                         <td className="p-4 font-bold text-sm text-white uppercase">
+                          {log.toolName}
+                        </td>
+                         <td className="p-4 font-mono text-sm text-[#006C35] font-bold">
+                          {log.result.keyMetrics[0]?.value || 'N/A'}
+                        </td>
+                         <td className="p-4 flex items-center gap-4">
+                           <span className="flex items-center gap-1 text-[10px] font-mono uppercase text-[#006C35] group-hover:text-[#EFBF04]">
+                             <ExternalLink size={12} /> View
+                           </span>
+                           <button 
+                            onClick={(e) => handleDelete(e, log.id)}
+                            className="text-zinc-600 hover:text-red-500 transition-colors"
+                            title="Purge Record"
+                           >
+                             <Trash2 size={14} />
+                           </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* FOOTER - OPERATOR PROFILE */}

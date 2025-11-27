@@ -1,3 +1,4 @@
+
 export interface ToolInput {
   id: string;
   label: string;
@@ -29,4 +30,13 @@ export interface AnalysisResult {
   recommendations: string[];
   chartData?: any[];
   sources?: GroundingSource[];
+}
+
+export interface SavedReport {
+  id: string;
+  timestamp: number;
+  toolId: string;
+  toolName: string;
+  inputs: Record<string, any>;
+  result: AnalysisResult;
 }

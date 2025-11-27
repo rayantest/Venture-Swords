@@ -1,22 +1,29 @@
+
 import React, { useState } from 'react';
 
-export const Logo = ({ className = "w-12 h-12" }: { className?: string }) => {
+interface LogoProps {
+  className?: string;
+}
+
+export const Logo: React.FC<LogoProps> = ({ className }) => {
   const [error, setError] = useState(false);
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center bg-[#094E2E] border border-[#EFBF04] ${className}`}>
-        <span className="text-[#EFBF04] font-bold text-xs">VS</span>
+      <div className={`flex items-center justify-center border-2 border-[#EFBF04] bg-[#094E2E]/20 text-[#EFBF04] font-mono font-black text-xl tracking-widest ${className}`}>
+        VS
       </div>
     );
   }
 
   return (
-    <img 
-      src="/components/l.png" 
-      alt="VentureSwords Logo" 
-      className={`object-contain ${className}`}
-      onError={() => setError(true)}
-    />
+    <div className={className}>
+      <img 
+        src="components/l.png" 
+        alt="VentureSwords" 
+        className="w-full h-full object-contain"
+        onError={() => setError(true)}
+      />
+    </div>
   );
 };
